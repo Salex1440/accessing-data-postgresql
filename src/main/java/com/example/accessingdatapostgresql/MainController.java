@@ -1,12 +1,11 @@
 package com.example.accessingdatapostgresql;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
+
+import java.lang.reflect.InvocationTargetException;
 
 @Controller // This means that this class is a Controller.
 @RequestMapping(path="/demo") // This means URL's start with /demo (after Application path).
@@ -24,13 +23,28 @@ public class MainController {
         t.setName(name);
         t.setEmail(email);
         tableRepository.save(t);
-        return "Saved";
+        return "Saved.";
     }
 
     @GetMapping(path="/all") // Map only GET Requests.
     public @ResponseBody Iterable<MyTable> getAllUsers() {
         // This returns a JSON or XML with the users.
         return tableRepository.findAll();
+    }
+
+    @DeleteMapping(path="/delete")
+    public @ResponseBody String deleteRecord(@RequestParam Integer id) {
+        String templateSucceed = "Record %d was deleted.";
+        String templateFailed = "Record %d doesn't exist!";
+        try {
+            tableRepository.deleteById(id);
+        }
+        catch (EmptyResultDataAccessException e) {
+            String message = String.format(templateFailed, id);
+            return message;
+        }
+        String message = String.format(templateSucceed, id);
+        return message;
     }
 
 }
